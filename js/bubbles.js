@@ -29,8 +29,12 @@ export function pop(bubble) {
   }, REFORM_MS);
 }
 
-function openAfterPop(url) {
+function openAfterPop(bubble) {
+  if (bubble._opening) return; // a double-click shouldn't open two tabs
+  bubble._opening = true;
+  const url = bubble.href;
   setTimeout(() => {
+    bubble._opening = false;
     const tab = window.open(url, '_blank');
     if (tab) tab.opener = null;
     else window.location.href = url; // popup blocked: open here instead
@@ -44,7 +48,7 @@ export function initBubbles({ onSay }) {
       const modified = e.ctrlKey || e.metaKey || e.shiftKey || e.altKey || e.button !== 0;
       if (bubble.href && !modified && !reducedMotion.matches) {
         e.preventDefault();
-        openAfterPop(bubble.href);
+        openAfterPop(bubble);
       }
       pop(bubble);
       if (bubble.dataset.say) onSay(bubble.dataset.say);
