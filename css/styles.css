@@ -5,7 +5,7 @@
   --abyss: #1a0f5c;  /* outlines and dark text */
   --deep: #2a1d8c;   /* fallback while the scene loads */
 
-  --font: "Recursive", system-ui, sans-serif;
+  --font: "Instrument Sans", system-ui, sans-serif;
 
   --orb: clamp(112px, 36vw, 156px);
   --gap: clamp(1.25rem, 6vw, 2.25rem);
@@ -56,8 +56,6 @@ body {
   font-family: var(--font);
   color: var(--chalk);
   background: var(--deep);
-  /* Recursive's casual axis: halfway between linear and brushy */
-  font-variation-settings: "CASL" 0.5;
   overflow-x: hidden;
   -webkit-tap-highlight-color: transparent;
 }
@@ -109,18 +107,17 @@ body {
     max(1.25rem, env(safe-area-inset-left));
 }
 
-/* A note scrawled in the top-left corner, not a hero banner */
+/* A quiet note in the top-left corner, not a hero banner */
 .intro {
   justify-self: start;
-  max-width: min(100%, 30rem);
-  transform: rotate(-2deg);
-  transform-origin: left top;
+  max-width: min(100%, 38rem);
 }
 
 .intro h1 {
   margin: 0;
   font-size: clamp(2.1rem, 7vw, 3.6rem);
-  font-weight: 700;
+  font-weight: 600;
+  letter-spacing: -0.01em;
   line-height: 1;
 }
 
@@ -239,7 +236,7 @@ body {
   place-items: center;
   width: auto;
   height: auto;
-  font-weight: 700;
+  font-weight: 600;
   font-size: calc(var(--orb) * 0.16);
   rotate: -8deg;
 }
