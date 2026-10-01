@@ -3,7 +3,7 @@ import { reducedMotion } from './effects.js';
 const REFORM_MS = 2600;
 // Long enough to see the splat, short enough that browsers still treat
 // the new tab as a response to the click (and don't block it).
-const NAVIGATE_DELAY_MS = 500;
+const NAVIGATE_DELAY_MS = 300;
 
 export const bubbles = [...document.querySelectorAll('.bubble')];
 
