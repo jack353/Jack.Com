@@ -8,7 +8,11 @@
   --font: "Instrument Sans", system-ui, sans-serif;
 
   --orb: clamp(112px, 36vw, 156px);
-  --gap: clamp(1.25rem, 6vw, 2.25rem);
+  /* Spacing grows with the screen: columns with width, rows with height */
+  --col-gap: clamp(1.5rem, 12vw, 6rem);
+  --row-gap: clamp(1.25rem, 6vh, 4.5rem);
+  /* Pushes the intro below the brightest patches of the water surface */
+  --intro-top: clamp(0rem, 7vh, 4.5rem);
   --bruce-w: clamp(120px, 30vw, 200px);
 
   color-scheme: dark;
@@ -25,8 +29,17 @@
 /* Wide screens: bubbles scatter across one loose row */
 @media (min-width: 768px) and (orientation: landscape) {
   :root {
+    --col-gap: clamp(2rem, 9vw, 11rem);
     --orb: clamp(140px, 14vw, 200px);
     --bruce-w: clamp(180px, 20vw, 300px);
+  }
+}
+
+/* Short portrait phones (e.g. iPhone SE): tighten up so nothing scrolls */
+@media (max-height: 640px) and (orientation: portrait) {
+  :root {
+    --row-gap: 3vh;
+    --intro-top: 0rem;
   }
 }
 
@@ -34,7 +47,8 @@
 @media (max-height: 520px) and (orientation: landscape) {
   :root {
     --orb: clamp(84px, 25vh, 126px);
-    --gap: 1.25rem;
+    --col-gap: clamp(1rem, 6vw, 3.5rem);
+    --row-gap: 1rem;
     --bruce-w: clamp(110px, 30vh, 170px);
   }
 }
@@ -81,7 +95,7 @@ body {
   position: absolute;
   inset: 0 0 auto;
   height: 35%;
-  background: linear-gradient(rgb(26 15 92 / 0.45), transparent);
+  background: linear-gradient(rgb(26 15 92 / 0.55), transparent);
 }
 
 @media (max-width: 900px) {
@@ -107,9 +121,10 @@ body {
     max(1.25rem, env(safe-area-inset-left));
 }
 
-/* A quiet note in the top-left corner, not a hero banner */
 .intro {
-  justify-self: start;
+  justify-self: center;
+  text-align: center;
+  margin-top: var(--intro-top);
   max-width: min(100%, 38rem);
 }
 
@@ -133,8 +148,8 @@ body {
   justify-self: center;
   display: grid;
   grid-template-columns: repeat(2, var(--orb));
-  gap: var(--gap) calc(var(--gap) * 1.3);
-  padding-block: var(--gap);
+  gap: var(--row-gap) var(--col-gap);
+  padding-block: var(--row-gap);
 }
 
 /* Small, uneven nudges so the grid doesn't read as a grid */
@@ -148,15 +163,18 @@ body {
     grid-template-columns: repeat(4, var(--orb));
   }
 
-  .bubble:nth-child(1) { translate: 0 calc(var(--orb) * -0.3); }
-  .bubble:nth-child(2) { translate: 0 calc(var(--orb) * 0.42); }
-  .bubble:nth-child(3) { translate: calc(var(--orb) * 0.08) calc(var(--orb) * -0.12); }
-  .bubble:nth-child(4) { translate: calc(var(--orb) * 0.18) calc(var(--orb) * 0.3); }
+  .bubble:nth-child(1) { translate: 0 calc(var(--orb) * -0.25 - 4vh); }
+  .bubble:nth-child(2) { translate: 0 calc(var(--orb) * 0.3 + 5vh); }
+  .bubble:nth-child(3) { translate: calc(var(--orb) * 0.08) calc(var(--orb) * -0.1 - 2vh); }
+  .bubble:nth-child(4) { translate: calc(var(--orb) * 0.18) calc(var(--orb) * 0.2 + 3vh); }
 }
 
 @media (max-height: 520px) and (orientation: landscape) {
   .stage {
     padding-top: 0.75rem;
+  }
+  :root {
+    --intro-top: 0rem;
   }
   .intro h1 {
     font-size: 1.8rem;
@@ -197,8 +215,9 @@ body {
 .bubble:nth-child(4) .bubble__float { animation-delay: -0.7s; animation-duration: 5.7s; }
 
 @keyframes drift {
-  from { transform: translateY(0); }
-  to   { transform: translateY(16px); }
+  0%   { transform: translate(0, 0); }
+  50%  { transform: translate(calc(var(--orb) * 0.025), calc(var(--orb) * 0.09)); }
+  100% { transform: translate(calc(var(--orb) * -0.02), calc(var(--orb) * 0.18)); }
 }
 
 .bubble__orb {
