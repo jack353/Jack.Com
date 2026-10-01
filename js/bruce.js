@@ -21,7 +21,7 @@ const approach = (cur, target, rate, dt) => cur + (target - cur) * (1 - Math.exp
 export function initBruce() {
   const el = document.getElementById('bruce');
   const img = el.querySelector('.bruce__img');
-  const hint = document.querySelector('.hint');
+  const speech = document.querySelector('.speech');
   new Image().src = FRAMES.chomp; // warm the cache so the first bite doesn't flicker
 
   let w, h, vw, vh;
@@ -42,6 +42,25 @@ export function initBruce() {
   let cooldownUntil = 0;
 
   const pointer = { x: 0, y: 0, t: -Infinity, overLink: false };
+  let speechTimer;
+
+  function say(text) {
+    speech.textContent = text;
+    speech.classList.add('is-visible');
+    placeSpeech();
+    clearTimeout(speechTimer);
+    speechTimer = setTimeout(() => speech.classList.remove('is-visible'), 3200);
+  }
+
+  // Speech bubble rides just above his head, kept on screen
+  function placeSpeech() {
+    if (!speech.classList.contains('is-visible')) return;
+    const sw = speech.offsetWidth;
+    const sh = speech.offsetHeight;
+    const x = clamp(pos.x - sw * 0.3, 8, vw - sw - 8);
+    const y = clamp(pos.y - h * 0.45 - sh - 14, 8, vh - sh - 8);
+    speech.style.translate = `${x.toFixed(1)}px ${y.toFixed(1)}px`;
+  }
 
   function measure() {
     vw = document.documentElement.clientWidth;
@@ -105,7 +124,6 @@ export function initBruce() {
 
   function startFrenzy(now) {
     if (mode === 'frenzy') return;
-    hint?.classList.add('is-hidden');
     mode = 'frenzy';
     el.classList.add('is-frenzy');
     modeUntil = now + FRENZY_TIMEOUT_MS;
@@ -171,7 +189,6 @@ export function initBruce() {
   }
 
   function calmFrenzy() {
-    hint?.classList.add('is-hidden');
     setFrame('chomp');
     bubbles.forEach((b, i) => setTimeout(() => pop(b), i * 150));
     setTimeout(() => setFrame('closed'), 900);
@@ -278,6 +295,7 @@ export function initBruce() {
       `translate3d(${(pos.x - w / 2).toFixed(1)}px, ${(pos.y - h / 2 + bob).toFixed(1)}px, 0) ` +
       `rotate(${t.toFixed(2)}deg) scale(${(1 + punch).toFixed(3)})`;
     img.style.transform = `scaleX(${flip.toFixed(3)})`;
+    placeSpeech();
   }
 
   let last = performance.now();
@@ -311,4 +329,6 @@ export function initBruce() {
   }
   el.classList.add('is-ready');
   requestAnimationFrame(tick);
+
+  return { say };
 }

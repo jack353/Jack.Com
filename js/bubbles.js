@@ -1,5 +1,3 @@
-import { splash, toast } from './effects.js';
-
 const REFORM_MS = 2600;
 
 export const bubbles = [...document.querySelectorAll('.bubble')];
@@ -15,8 +13,6 @@ export function isPopped(bubble) {
 
 export function pop(bubble) {
   if (isPopped(bubble)) return;
-  const { x, y, r } = orbCenter(bubble);
-  splash(x, y, 14, r * 1.3);
   bubble.classList.remove('is-reforming');
   bubble.classList.add('is-popped');
 
@@ -28,12 +24,12 @@ export function pop(bubble) {
   }, REFORM_MS);
 }
 
-export function initBubbles() {
+export function initBubbles({ onSay }) {
   for (const bubble of bubbles) {
     // Links navigate natively (new tab); we just add the pop on top.
     bubble.addEventListener('click', () => {
       pop(bubble);
-      if (bubble.dataset.toast) toast(bubble.dataset.toast);
+      if (bubble.dataset.say) onSay(bubble.dataset.say);
     });
   }
 }

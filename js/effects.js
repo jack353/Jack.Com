@@ -22,29 +22,3 @@ export function splash(x, y, count = 10, spread = 70) {
   }
   document.body.append(frag);
 }
-
-/** Background bubbles that rise forever via CSS. */
-export function fillAmbient(container, count) {
-  const frag = document.createDocumentFragment();
-  for (let i = 0; i < count; i++) {
-    const el = document.createElement('span');
-    const d = rand(9, 20);
-    el.style.cssText = `
-      --x:${rand(0, 100).toFixed(1)}%;
-      --s:${rand(4, 16).toFixed(1)}px;
-      --d:${d.toFixed(1)}s;
-      --delay:${(-rand(0, d)).toFixed(1)}s;
-      --sway:${rand(-40, 40).toFixed(0)}px;`;
-    frag.append(el);
-  }
-  container.append(frag);
-}
-
-let toastTimer;
-export function toast(message) {
-  const el = document.querySelector('.toast');
-  el.textContent = message;
-  el.classList.add('is-visible');
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => el.classList.remove('is-visible'), 3200);
-}
