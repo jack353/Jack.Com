@@ -12,7 +12,7 @@
   --col-gap: clamp(1.5rem, 12vw, 6rem);
   --row-gap: clamp(1.25rem, 6vh, 4.5rem);
   /* Pushes the intro below the brightest patches of the water surface */
-  --intro-top: clamp(0rem, 7vh, 4.5rem);
+  --intro-top: clamp(0rem, 3.5vh, 2.25rem);
   --bruce-w: clamp(120px, 30vw, 200px);
 
   color-scheme: dark;
