@@ -2,10 +2,10 @@
 :root {
   --chalk: #ffffff;
   --foam: #c9f3ff;   /* secondary text, picked from the light rays */
-  --abyss: #1a0f5c;  /* outlines and cartoon drop shadows */
+  --abyss: #1a0f5c;  /* outlines and dark text */
   --deep: #2a1d8c;   /* fallback while the scene loads */
 
-  --hand: "Shantell Sans", "Comic Neue", "Segoe Print", cursive;
+  --font: "Recursive", system-ui, sans-serif;
 
   --orb: clamp(112px, 36vw, 156px);
   --gap: clamp(1.25rem, 6vw, 2.25rem);
@@ -53,9 +53,11 @@ body {
 }
 
 body {
-  font-family: var(--hand);
+  font-family: var(--font);
   color: var(--chalk);
   background: var(--deep);
+  /* Recursive's casual axis: halfway between linear and brushy */
+  font-variation-settings: "CASL" 0.5;
   overflow-x: hidden;
   -webkit-tap-highlight-color: transparent;
 }
@@ -75,10 +77,22 @@ body {
   background-position: center bottom;
 }
 
+/* Dim the bright water surface just enough for the intro to stay legible */
+.ocean::after {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 35%;
+  background: linear-gradient(rgb(26 15 92 / 0.45), transparent);
+}
+
 @media (max-width: 900px) {
   .ocean {
     background-image: url("../assets/img/ocean-1280.webp");
     background-position: 62% bottom;
+  }
+  .ocean::after {
+    background: linear-gradient(rgb(26 15 92 / 0.6), transparent);
   }
 }
 
@@ -98,17 +112,15 @@ body {
 /* A note scrawled in the top-left corner, not a hero banner */
 .intro {
   justify-self: start;
-  max-width: 34ch;
+  max-width: min(100%, 30rem);
   transform: rotate(-2deg);
   transform-origin: left top;
-  /* Hard offset shadow, like the outlines in the background art */
-  text-shadow: 2px 3px 0 var(--abyss);
 }
 
 .intro h1 {
   margin: 0;
   font-size: clamp(2.1rem, 7vw, 3.6rem);
-  font-weight: 800;
+  font-weight: 700;
   line-height: 1;
 }
 
@@ -160,7 +172,7 @@ body {
   }
 }
 
-/* ---------- Bubbles (Jack's original bubble art, recolored) ---------- */
+/* ---------- Bubbles (Jack's original bubble art, redrawn thinner) ---------- */
 .bubble {
   appearance: none;
   border: 0;
@@ -198,7 +210,7 @@ body {
   place-items: center;
   width: var(--orb);
   aspect-ratio: 1;
-  background: url("../assets/img/bubble.webp") center / contain no-repeat;
+  background: url("../assets/img/bubble.svg") center / contain no-repeat;
   rotate: var(--tilt, 0deg);
   transition: rotate 0.4s cubic-bezier(0.34, 1.8, 0.64, 1);
 }
@@ -227,17 +239,15 @@ body {
   place-items: center;
   width: auto;
   height: auto;
-  font-weight: 800;
-  font-size: calc(var(--orb) * 0.17);
+  font-weight: 700;
+  font-size: calc(var(--orb) * 0.16);
   rotate: -8deg;
-  text-shadow: 2px 2px 0 var(--abyss);
 }
 
 .bubble__label {
   font-size: clamp(1.05rem, 2.4vw, 1.3rem);
   font-weight: 600;
   white-space: nowrap;
-  text-shadow: 2px 2px 0 var(--abyss);
   text-underline-offset: 5px;
   text-decoration-thickness: 2px;
 }
@@ -370,7 +380,6 @@ body {
   font-weight: 600;
   font-size: 1.05rem;
   line-height: 1.3;
-  box-shadow: 3px 4px 0 var(--abyss);
   pointer-events: none;
   opacity: 0;
   scale: 0.6;
