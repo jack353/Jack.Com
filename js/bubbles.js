@@ -1,4 +1,9 @@
+import { reducedMotion } from './effects.js';
+
 const REFORM_MS = 2600;
+// Long enough to see the splat, short enough that browsers still treat
+// the new tab as a response to the click (and don't block it).
+const NAVIGATE_DELAY_MS = 500;
 
 export const bubbles = [...document.querySelectorAll('.bubble')];
 
@@ -24,10 +29,23 @@ export function pop(bubble) {
   }, REFORM_MS);
 }
 
+function openAfterPop(url) {
+  setTimeout(() => {
+    const tab = window.open(url, '_blank');
+    if (tab) tab.opener = null;
+    else window.location.href = url; // popup blocked: open here instead
+  }, NAVIGATE_DELAY_MS);
+}
+
 export function initBubbles({ onSay }) {
   for (const bubble of bubbles) {
-    // Links navigate natively (new tab); we just add the pop on top.
-    bubble.addEventListener('click', () => {
+    bubble.addEventListener('click', (e) => {
+      // Ctrl/Cmd/Shift/middle clicks keep the browser's normal behaviour
+      const modified = e.ctrlKey || e.metaKey || e.shiftKey || e.altKey || e.button !== 0;
+      if (bubble.href && !modified && !reducedMotion.matches) {
+        e.preventDefault();
+        openAfterPop(bubble.href);
+      }
       pop(bubble);
       if (bubble.dataset.say) onSay(bubble.dataset.say);
     });
