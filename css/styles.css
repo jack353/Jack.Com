@@ -1,64 +1,433 @@
-@charset "UTF-8";
+/* ---------- Tokens ---------- */
+:root {
+  --chalk: #ffffff;
+  --foam: #c9f3ff;   /* secondary text, picked from the light rays */
+  --abyss: #1a0f5c;  /* outlines and dark text */
+  --deep: #2a1d8c;   /* fallback while the scene loads */
 
-* {
-  font-family: 'Lexend Deca';
-  /* cursor: url('assets/pngs/nemo.png'), pointer; */
+  --font: "Instrument Sans", system-ui, sans-serif;
+
+  --orb: clamp(112px, 36vw, 156px);
+  /* Spacing grows with the screen: columns with width, rows with height */
+  --col-gap: clamp(1.5rem, 12vw, 6rem);
+  --row-gap: clamp(1.25rem, 6vh, 4.5rem);
+  /* Pushes the intro below the brightest patches of the water surface */
+  --intro-top: clamp(0rem, 3.5vh, 2.25rem);
+  --bruce-w: clamp(120px, 30vw, 200px);
+
+  color-scheme: dark;
 }
 
-.container{
-  position: relative;
-  /* --bs-gutter-x: 1.5rem;
-  --bs-gutter-y: 0;
-  padding-right: calc(var(--bs-gutter-x) * 0.5);
-  padding-left: calc(var(--bs-gutter-x) * 0.5); */
-  margin-right: auto;
-  margin-left: auto;
-  z-index: 1;
+/* Tablets in portrait: keep the 2x2 grid, just bigger */
+@media (min-width: 600px) {
+  :root {
+    --orb: clamp(150px, 26vw, 230px);
+    --bruce-w: clamp(170px, 24vw, 260px);
+  }
 }
 
+/* Wide screens: bubbles scatter across one loose row */
+@media (min-width: 768px) and (orientation: landscape) {
+  :root {
+    --col-gap: clamp(2rem, 9vw, 11rem);
+    --orb: clamp(140px, 14vw, 200px);
+    --bruce-w: clamp(180px, 20vw, 300px);
+  }
+}
 
+/* Short portrait phones (e.g. iPhone SE): tighten up so nothing scrolls */
+@media (max-height: 640px) and (orientation: portrait) {
+  :root {
+    --row-gap: 3vh;
+    --intro-top: 0rem;
+  }
+}
 
+/* Phones in landscape: size from height instead */
+@media (max-height: 520px) and (orientation: landscape) {
+  :root {
+    --orb: clamp(84px, 25vh, 126px);
+    --col-gap: clamp(1rem, 6vw, 3.5rem);
+    --row-gap: 1rem;
+    --bruce-w: clamp(110px, 30vh, 170px);
+  }
+}
 
+/* ---------- Base ---------- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
 
-.bground{
-  background-image: url("../assets/underWaterScene.jpg");
-  -webkit-background-size: cover;
-  -moz-background-size: cover;
-  -o-background-size: cover;
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  font-family: var(--font);
+  color: var(--chalk);
+  background: var(--deep);
+  overflow-x: hidden;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ---------- Scene ---------- */
+.ocean {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background-color: var(--deep);
+  background-image: url("../assets/img/ocean-2560.jpg");
+  background-image: image-set(
+    url("../assets/img/ocean-2560.webp") type("image/webp"),
+    url("../assets/img/ocean-2560.jpg") type("image/jpeg")
+  );
   background-size: cover;
-  background-repeat: no-repeat;
-  background-attachment: fixed;
-  background-position: center;
+  background-position: center bottom;
 }
 
-.bubble{
-  margin: auto;
-  position: relative;
-  z-index: 9999;
-}
-.big{
-  width: 30vh;
-}
-
-.icon{
+/* Dim the bright water surface just enough for the intro to stay legible */
+.ocean::after {
+  content: "";
   position: absolute;
-  height: 12.5vh;
+  inset: 0 0 auto;
+  height: 35%;
+  background: linear-gradient(rgb(26 15 92 / 0.55), transparent);
 }
 
-.center{
-  display: flex;
-  align-items: center;
-  justify-content: center;
+@media (max-width: 900px) {
+  .ocean {
+    background-image: url("../assets/img/ocean-1280.webp");
+    background-position: 62% bottom;
+  }
+  .ocean::after {
+    background: linear-gradient(rgb(26 15 92 / 0.6), transparent);
+  }
 }
 
-.clickable{
+/* ---------- Layout ---------- */
+.stage {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  padding:
+    max(1.25rem, env(safe-area-inset-top))
+    max(1.25rem, env(safe-area-inset-right))
+    max(1.25rem, env(safe-area-inset-bottom))
+    max(1.25rem, env(safe-area-inset-left));
+}
+
+.intro {
+  justify-self: center;
+  text-align: center;
+  margin-top: var(--intro-top);
+  max-width: min(100%, 38rem);
+}
+
+.intro h1 {
+  margin: 0;
+  font-size: clamp(2.1rem, 7vw, 3.6rem);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1;
+}
+
+.intro p {
+  margin: 0.6rem 0 0;
+  font-size: clamp(1rem, 2.4vw, 1.2rem);
+  line-height: 1.45;
+  color: var(--foam);
+}
+
+.bubbles {
+  align-self: center;
+  justify-self: center;
+  display: grid;
+  grid-template-columns: repeat(2, var(--orb));
+  gap: var(--row-gap) var(--col-gap);
+  padding-block: var(--row-gap);
+}
+
+/* Small, uneven nudges so the grid doesn't read as a grid */
+.bubble:nth-child(1) { --tilt: -4deg; }
+.bubble:nth-child(2) { --tilt: 3deg;  translate: 0 1.2rem; }
+.bubble:nth-child(3) { --tilt: 2deg;  translate: 0.6rem -0.4rem; }
+.bubble:nth-child(4) { --tilt: -3deg; translate: -0.4rem 0.9rem; }
+
+@media (min-width: 768px) and (orientation: landscape), (max-height: 520px) and (orientation: landscape) {
+  .bubbles {
+    grid-template-columns: repeat(4, var(--orb));
+  }
+
+  .bubble:nth-child(1) { translate: 0 calc(var(--orb) * -0.25 - 4vh); }
+  .bubble:nth-child(2) { translate: 0 calc(var(--orb) * 0.3 + 5vh); }
+  .bubble:nth-child(3) { translate: calc(var(--orb) * 0.08) calc(var(--orb) * -0.1 - 2vh); }
+  .bubble:nth-child(4) { translate: calc(var(--orb) * 0.18) calc(var(--orb) * 0.2 + 3vh); }
+}
+
+@media (max-height: 520px) and (orientation: landscape) {
+  .stage {
+    padding-top: 0.75rem;
+  }
+  :root {
+    --intro-top: 0rem;
+  }
+  .intro h1 {
+    font-size: 1.8rem;
+  }
+  .intro p {
+    font-size: 0.95rem;
+  }
+  .bubble:nth-child(n) {
+    translate: 0 0;
+  }
+}
+
+/* ---------- Bubbles (Jack's original bubble art, redrawn thinner) ---------- */
+.bubble {
+  appearance: none;
+  border: 0;
+  padding: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-decoration: none;
   cursor: pointer;
+  position: relative;
+  z-index: 2;
+  width: var(--orb);
+  justify-self: center;
 }
 
-.bruce{
-  height: 30vh;
+.bubble__float {
+  display: grid;
+  justify-items: center;
+  gap: 0.35rem;
+  animation: drift 4.6s ease-in-out infinite alternate;
+}
+
+.bubble:nth-child(2) .bubble__float { animation-delay: -1.3s; animation-duration: 5.3s; }
+.bubble:nth-child(3) .bubble__float { animation-delay: -2.8s; animation-duration: 4.2s; }
+.bubble:nth-child(4) .bubble__float { animation-delay: -0.7s; animation-duration: 5.7s; }
+
+@keyframes drift {
+  0%   { transform: translate(0, 0); }
+  50%  { transform: translate(calc(var(--orb) * 0.025), calc(var(--orb) * 0.09)); }
+  100% { transform: translate(calc(var(--orb) * -0.02), calc(var(--orb) * 0.18)); }
+}
+
+.bubble__orb {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: var(--orb);
+  aspect-ratio: 1;
+  background: url("../assets/img/bubble.svg") center / contain no-repeat;
+  rotate: var(--tilt, 0deg);
+  transition: rotate 0.4s cubic-bezier(0.34, 1.8, 0.64, 1);
+}
+
+/* The splat from the original site, shown for a beat when a bubble pops */
+.bubble__orb::after {
+  content: "";
   position: absolute;
-  z-index: 5;
-  display: inline-block;
-  transform: "scaleX(1)";
+  inset: -12%;
+  background: url("../assets/img/splat.webp") center / contain no-repeat;
+  opacity: 0;
+  scale: 0.6;
+  pointer-events: none;
+}
+
+.bubble__icon {
+  width: 40%;
+  height: 40%;
+  object-fit: contain;
+  /* Nudge away from the highlight arc in the top-right of the art */
+  translate: -5% 4%;
+}
+
+.bubble__soon {
+  display: grid;
+  place-items: center;
+  width: auto;
+  height: auto;
+  font-weight: 600;
+  font-size: calc(var(--orb) * 0.16);
+  rotate: -8deg;
+}
+
+.bubble__label {
+  font-size: clamp(1.05rem, 2.4vw, 1.3rem);
+  font-weight: 600;
+  white-space: nowrap;
+  text-underline-offset: 5px;
+  text-decoration-thickness: 2px;
+}
+
+/* Response to the pointer: the bubble wobbles, the label gets a squiggle */
+@media (hover: hover) {
+  .bubble:hover .bubble__orb {
+    rotate: calc(var(--tilt, 0deg) * -2);
+  }
+  .bubble:hover .bubble__label {
+    text-decoration-line: underline;
+    text-decoration-style: wavy;
+  }
+}
+
+.bubble:focus-visible {
+  outline: none;
+}
+.bubble:focus-visible .bubble__label {
+  text-decoration-line: underline;
+  text-decoration-style: wavy;
+}
+.bubble:focus-visible .bubble__orb {
+  outline: 3px dashed var(--chalk);
+  outline-offset: 4px;
+  border-radius: 50%;
+}
+
+/* Pop: outline and icon vanish, splat flashes, label stays put */
+.bubble.is-popped .bubble__orb {
+  background-image: none;
+}
+.bubble.is-popped .bubble__icon {
+  visibility: hidden;
+}
+.bubble.is-popped .bubble__orb::after {
+  animation: splat 0.6s ease-out forwards;
+}
+.bubble.is-reforming .bubble__orb {
+  animation: reform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes splat {
+  0%   { opacity: 1; scale: 0.6; }
+  35%  { opacity: 1; scale: 1; }
+  100% { opacity: 0; scale: 1.1; }
+}
+@keyframes reform {
+  from { scale: 0.15; opacity: 0; }
+  to   { scale: 1; opacity: 1; }
+}
+
+/* Water droplets when Bruce bites (spawned in effects.js) */
+.droplet {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 50;
+  width: var(--s);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  pointer-events: none;
+  background: var(--foam);
+  border: 1.5px solid var(--abyss);
+  animation: splash var(--d) cubic-bezier(0.15, 0.7, 0.4, 1) forwards;
+}
+
+@keyframes splash {
+  from { transform: translate(var(--x0), var(--y0)) scale(1); opacity: 1; }
+  to   { transform: translate(var(--x1), var(--y1)) scale(0.3); opacity: 0; }
+}
+
+/* ---------- Bruce ---------- */
+.bruce {
+  appearance: none;
+  border: 0;
+  padding: 0;
+  background: none;
+  position: fixed;
+  left: 0;
+  top: 0;
+  /* Behind the bubbles, so he never steals a tap meant for a link */
+  z-index: 1;
+  width: var(--bruce-w);
+  aspect-ratio: 298 / 275;
+  cursor: pointer;
+  will-change: transform;
+  visibility: hidden;
+  touch-action: manipulation;
+}
+
+.bruce.is-ready {
+  visibility: visible;
+}
+
+/* ...but in front while he's eating them */
+.bruce.is-frenzy {
+  z-index: 3;
+}
+
+.bruce__img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  user-select: none;
+  -webkit-user-drag: none;
+  will-change: transform;
+}
+
+.bruce:focus-visible {
+  outline: 3px dashed var(--chalk);
+  outline-offset: 4px;
+  border-radius: 24px;
+}
+
+/* ---------- Bruce's speech bubble ---------- */
+.speech {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 60;
+  margin: 0;
+  width: max-content;
+  max-width: min(78vw, 17rem);
+  padding: 0.6rem 0.9rem;
+  border: 3px solid var(--abyss);
+  border-radius: 1.4rem 1.6rem 1.5rem 1.2rem;
+  background: var(--chalk);
+  color: var(--abyss);
+  font-weight: 600;
+  font-size: 1.05rem;
+  line-height: 1.3;
+  pointer-events: none;
+  opacity: 0;
+  scale: 0.6;
+  transform-origin: 30% 100%;
+  transition: opacity 0.15s, scale 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.speech::after {
+  content: "";
+  position: absolute;
+  left: 28%;
+  bottom: -11px;
+  width: 18px;
+  height: 18px;
+  background: var(--chalk);
+  border-right: 3px solid var(--abyss);
+  border-bottom: 3px solid var(--abyss);
+  transform: rotate(45deg) skew(12deg, 12deg);
+}
+
+.speech.is-visible {
+  opacity: 1;
+  scale: 1;
+}
+
+/* ---------- Reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .bubble__float {
+    animation: none;
+  }
+  .bubble__orb,
+  .speech {
+    transition: none;
+  }
 }

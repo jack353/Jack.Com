@@ -1,66 +1,95 @@
 <!DOCTYPE html>
-
 <html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Jack Ciroli</title>
+    <meta name="author" content="Jack Ciroli" />
+    <meta name="description" content="Jack Ciroli, software engineer. Resume, GitHub, LinkedIn, and a shark named Bruce." />
+    <meta name="theme-color" content="#2b1d8f" />
 
-    <head>
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://jack353.github.io/Jack.Com/" />
+    <meta property="og:title" content="Jack Ciroli" />
+    <meta property="og:description" content="Software engineer in Boston building cloud platforms and AI tooling. Resume, GitHub and LinkedIn." />
+    <!-- Link previews (LinkedIn, Slack, etc.) need an absolute image URL -->
+    <meta property="og:image" content="https://jack353.github.io/Jack.Com/assets/img/og.jpg" />
+    <meta name="twitter:card" content="summary_large_image" />
 
-        <meta charset="utf-8" />
+    <link rel="icon" href="assets/favicon.ico" />
 
-        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-        <meta name="author" content="Jack Ciroli" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;600&display=swap" rel="stylesheet" />
 
-        <title>Jack Ciroli</title>
+    <link rel="preload" as="image" href="assets/img/bruce.webp" />
+    <link rel="preload" as="image" href="assets/img/bruce-chomp.webp" />
+    <link rel="preload" as="image" href="assets/img/bubble.svg" />
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
 
-        <link rel="shortcut icon" type="image/x-icon" href="assets/favicon.ico"/>
-        <link rel="icon" type="image/x-icon" href="assets/favicon.ico"/>
+  <body>
+    <div class="ocean" aria-hidden="true"></div>
 
-        <link href="css/styles.css" rel="stylesheet" />
+    <main class="stage">
+      <header class="intro">
+        <h1>Jack Ciroli</h1>
+        <p>Software engineer in Boston. I build cloud platforms and AI&nbsp;tooling.<br />The shark is Bruce. He&rsquo;s friendly.&nbsp;Mostly.</p>
+      </header>
 
-    </head>
+      <nav class="bubbles" aria-label="Links">
+        <a class="bubble" href="assets/Resume-Jack-Ciroli.pdf?v=2026-09" target="_blank" rel="noopener">
+          <span class="bubble__float">
+            <span class="bubble__orb">
+              <img class="bubble__icon" src="assets/img/resume.webp" alt="" width="188" height="240" />
+            </span>
+            <span class="bubble__label">resume</span>
+          </span>
+        </a>
 
-    <body class="bground">
+        <a class="bubble" href="https://github.com/jack353" target="_blank" rel="noopener">
+          <span class="bubble__float">
+            <span class="bubble__orb">
+              <svg class="bubble__icon" viewBox="0 0 16 16" aria-hidden="true">
+                <path fill="#fff" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
+              </svg>
+            </span>
+            <span class="bubble__label">github</span>
+          </span>
+        </a>
 
-        <div class="container" style="display: flex;">
+        <a class="bubble" href="https://www.linkedin.com/in/jack-ciroli/" target="_blank" rel="noopener">
+          <span class="bubble__float">
+            <span class="bubble__orb">
+              <svg class="bubble__icon" viewBox="0 0 24 24" aria-hidden="true">
+                <rect width="24" height="24" rx="4" fill="#0a66c2"/>
+                <circle cx="6.6" cy="6.7" r="1.75" fill="#fff"/>
+                <rect x="5.1" y="9.6" width="3" height="9.4" fill="#fff"/>
+                <path fill="#fff" d="M10.2 9.6h2.9v1.3c.4-.8 1.4-1.5 2.9-1.5 3 0 3.6 2 3.6 4.6V19h-3v-4.4c0-1.1 0-2.4-1.5-2.4s-1.8 1.1-1.8 2.3V19h-3.1z"/>
+              </svg>
+            </span>
+            <span class="bubble__label">linkedin</span>
+          </span>
+        </a>
 
-            <div class="container" style="margin-top:5vh">
-                <div class="center">
-                    <img id='0' class="bubble big clickable pop" src="assets/pngs/bigBubble.png" alt="bubble" onclick="openResume()">
-                    <img id='icon0' class="icon pop" src="assets/pngs/resumeIcon.png">
-                </div>
-            </div>
+        <button class="bubble" type="button" data-say="Projects? Still cooking. Check back soon!">
+          <span class="bubble__float">
+            <span class="bubble__orb">
+              <span class="bubble__icon bubble__soon" aria-hidden="true">soon!</span>
+            </span>
+            <span class="bubble__label">projects</span>
+          </span>
+        </button>
+      </nav>
 
-            <div class="container" style="margin-top:50vh; left:10vh">
-                <div class="center">
-                    <img id='1' class="bubble big clickable pop" src="assets/pngs/bigBubble.png" alt="bubble" onclick="openGithub()">
-                    <img id='icon1' class="icon pop" src="assets/pngs/githubWhite.png">
-                </div>
-            </div>
+    </main>
 
-            <div class="container" style="margin-top:5vh; left:-5vh">
-                <div class="center">
-                    <img id='x' class="bubble big clickable pop" src="assets/pngs/bigBubble.png" alt="bubble" onclick="changeSource('x')">
-                    <img id='iconx' class="icon pop" src="assets/pngs/comingSoon.png">
-                </div>
-            </div>
+    <button class="bruce" id="bruce" type="button" aria-label="Bruce the shark. Press for a feeding frenzy.">
+      <img class="bruce__img" src="assets/img/bruce.webp" alt="" width="298" height="275" draggable="false" />
+    </button>
 
-            <div class="container" style="margin-top:25vh; margin-bottom: 10vh;">
-                <div class="center">
-                    <img id='2' class="bubble big clickable pop" src="assets/pngs/bigBubble.png" alt="bubble" onclick="openLinkedIn()">
-                    <img id='icon2' class="icon pop" src="assets/pngs/linkedIn.png">
-                </div>
-            </div>
+    <p class="speech" role="status" aria-live="polite"></p>
 
-            <div id="bruceTank" class="container" style="margin-top: 65vh; left: -40vh" onclick="bruceClick()">
-                <img id="bruce" class="bruce clickable" src="assets/pngs/bruce.png">
-            </div>
-
-        </div>
-
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
-        <script src="js/scripts.js"></script>
-        <script src="js/animations.js"></script>
-        <script src="js/bruceRoutine.js"></script>
-
-    </body>
-
+    <script type="module" src="js/main.js"></script>
+  </body>
 </html>
