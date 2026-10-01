@@ -1,64 +1,419 @@
-@charset "UTF-8";
+/* ---------- Tokens ---------- */
+:root {
+  --ink: #fff;
+  --ink-soft: rgb(255 255 255 / 0.82);
+  --deep: #1d1270;
+  --glow: rgb(140 220 255 / 0.55);
 
-* {
-  font-family: 'Lexend Deca';
-  /* cursor: url('assets/pngs/nemo.png'), pointer; */
+  /* Bubble size scales with the viewport, capped at both ends */
+  --orb: clamp(104px, 34vw, 150px);
+  --gap: clamp(1rem, 5vw, 2rem);
+
+  --bruce-w: clamp(120px, 30vw, 200px);
+
+  color-scheme: dark;
 }
 
-.container{
-  position: relative;
-  /* --bs-gutter-x: 1.5rem;
-  --bs-gutter-y: 0;
-  padding-right: calc(var(--bs-gutter-x) * 0.5);
-  padding-left: calc(var(--bs-gutter-x) * 0.5); */
-  margin-right: auto;
-  margin-left: auto;
-  z-index: 1;
+/* Tablets in portrait: keep the 2x2 grid, just bigger */
+@media (min-width: 600px) {
+  :root {
+    --orb: clamp(150px, 26vw, 230px);
+    --bruce-w: clamp(170px, 24vw, 260px);
+  }
 }
 
+/* Wide screens: one staggered row */
+@media (min-width: 768px) and (orientation: landscape) {
+  :root {
+    --orb: clamp(140px, 15vw, 210px);
+    --bruce-w: clamp(180px, 20vw, 300px);
+  }
+}
 
+/* Phones in landscape / short windows: size from height instead */
+@media (max-height: 520px) and (orientation: landscape) {
+  :root {
+    --orb: clamp(84px, 24vh, 130px);
+    --gap: 1.25rem;
+    --bruce-w: clamp(110px, 30vh, 170px);
+  }
+}
 
+/* ---------- Base ---------- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
 
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+}
 
-.bground{
-  background-image: url("../assets/underWaterScene.jpg");
-  -webkit-background-size: cover;
-  -moz-background-size: cover;
-  -o-background-size: cover;
+body {
+  font-family: "Lexend Deca", system-ui, sans-serif;
+  color: var(--ink);
+  background: var(--deep);
+  overflow-x: hidden;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ---------- Scene ---------- */
+.ocean {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  background-color: var(--deep);
+  background-image: url("../assets/img/ocean-2560.jpg");
+  background-image: image-set(
+    url("../assets/img/ocean-2560.webp") type("image/webp"),
+    url("../assets/img/ocean-2560.jpg") type("image/jpeg")
+  );
   background-size: cover;
-  background-repeat: no-repeat;
-  background-attachment: fixed;
-  background-position: center;
+  background-position: center bottom;
 }
 
-.bubble{
-  margin: auto;
-  position: relative;
-  z-index: 9999;
-}
-.big{
-  width: 30vh;
+@media (max-width: 900px) {
+  .ocean {
+    background-image: url("../assets/img/ocean-1280.webp");
+    /* Keep the light rays in frame on tall, narrow screens */
+    background-position: 62% bottom;
+  }
 }
 
-.icon{
+/* Slowly rising ambient bubbles (spawned in effects.js) */
+.ambient {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.ambient span {
   position: absolute;
-  height: 12.5vh;
+  bottom: -20px;
+  left: var(--x);
+  width: var(--s);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: 1px solid rgb(255 255 255 / 0.45);
+  background: radial-gradient(circle at 30% 30%, rgb(255 255 255 / 0.5), transparent 60%);
+  animation: rise var(--d) linear var(--delay) infinite;
 }
 
-.center{
-  display: flex;
-  align-items: center;
-  justify-content: center;
+@keyframes rise {
+  to {
+    transform: translate(var(--sway), -110vh);
+    opacity: 0;
+  }
 }
 
-.clickable{
+/* ---------- Layout ---------- */
+.stage {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  justify-items: center;
+  padding:
+    max(1.5rem, env(safe-area-inset-top))
+    max(1rem, env(safe-area-inset-right))
+    max(1rem, env(safe-area-inset-bottom))
+    max(1rem, env(safe-area-inset-left));
+}
+
+.intro {
+  text-align: center;
+  text-shadow: 0 2px 18px rgb(20 10 90 / 0.7);
+}
+
+.intro h1 {
+  margin: 0;
+  font-size: clamp(2.25rem, 8vw, 4.5rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+}
+
+.intro p {
+  margin: 0.5rem 0 0;
+  font-size: clamp(0.95rem, 2.4vw, 1.2rem);
+  color: var(--ink-soft);
+}
+
+.bubbles {
+  align-self: center;
+  display: grid;
+  grid-template-columns: repeat(2, var(--orb));
+  gap: var(--gap) calc(var(--gap) * 1.4);
+  padding-block: var(--gap);
+}
+
+@media (min-width: 768px) and (orientation: landscape), (max-height: 520px) and (orientation: landscape) {
+  .bubbles {
+    grid-template-columns: repeat(4, var(--orb));
+  }
+
+  /* Stagger the row so it reads as drifting bubbles, not a toolbar */
+  .bubble:nth-child(odd) {
+    margin-top: calc(var(--orb) * -0.35);
+  }
+  .bubble:nth-child(even) {
+    margin-top: calc(var(--orb) * 0.35);
+  }
+}
+
+.hint {
+  margin: 0;
+  font-size: 0.85rem;
+  color: rgb(255 255 255 / 0.55);
+  transition: opacity 0.6s;
+}
+
+.hint.is-hidden {
+  opacity: 0;
+}
+
+@media (max-height: 520px) and (orientation: landscape) {
+  .stage {
+    padding-top: 0.75rem;
+  }
+  .intro h1 {
+    font-size: 1.75rem;
+  }
+  .hint {
+    display: none;
+  }
+}
+
+/* ---------- Bubbles ---------- */
+.bubble {
+  /* Reset button / link styling */
+  appearance: none;
+  border: 0;
+  padding: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-decoration: none;
   cursor: pointer;
+  position: relative;
+  z-index: 2;
+  width: var(--orb);
+  justify-self: center;
 }
 
-.bruce{
-  height: 30vh;
+.bubble__float {
+  display: grid;
+  justify-items: center;
+  gap: 0.6rem;
+  animation: drift 4.5s ease-in-out infinite alternate;
+}
+
+.bubble:nth-child(2) .bubble__float { animation-delay: -1.2s; animation-duration: 5.2s; }
+.bubble:nth-child(3) .bubble__float { animation-delay: -2.7s; animation-duration: 4.1s; }
+.bubble:nth-child(4) .bubble__float { animation-delay: -0.6s; animation-duration: 5.6s; }
+
+@keyframes drift {
+  from { transform: translate(0, 0); }
+  to   { transform: translate(4px, 18px); }
+}
+
+.bubble__orb {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: var(--orb);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 32% 26%, rgb(255 255 255 / 0.75) 0 5%, transparent 16%),
+    radial-gradient(circle at 50% 50%, rgb(120 200 255 / 0.06) 55%, rgb(170 230 255 / 0.32) 72%, rgb(255 255 255 / 0.55) 100%);
+  border: 2px solid rgb(255 255 255 / 0.65);
+  box-shadow:
+    inset 0 -10px 24px rgb(80 180 255 / 0.25),
+    0 8px 30px rgb(10 0 60 / 0.35);
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s;
+}
+
+/* Highlight arc, a nod to the original bubble art */
+.bubble__orb::after {
+  content: "";
   position: absolute;
-  z-index: 5;
-  display: inline-block;
-  transform: scaleX(1); /* Fixed syntax - removed quotes */
+  inset: 14%;
+  border-radius: 50%;
+  border: 3px solid transparent;
+  border-top-color: rgb(255 255 255 / 0.85);
+  transform: rotate(18deg);
+  pointer-events: none;
+}
+
+.bubble__icon {
+  width: 46%;
+  height: 46%;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 6px rgb(0 0 40 / 0.35));
+}
+
+.bubble__label {
+  font-weight: 600;
+  font-size: clamp(0.9rem, 2.2vw, 1.05rem);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  text-shadow: 0 1px 10px rgb(20 10 90 / 0.8);
+}
+
+.bubble__label small {
+  font-size: 0.7em;
+  font-weight: 400;
+  padding: 0.1em 0.5em;
+  margin-left: 0.25em;
+  border-radius: 99px;
+  background: rgb(255 255 255 / 0.18);
+  vertical-align: 0.15em;
+}
+
+@media (hover: hover) {
+  .bubble:hover .bubble__orb {
+    transform: scale(1.08);
+    box-shadow:
+      inset 0 -10px 24px rgb(80 180 255 / 0.3),
+      0 0 40px var(--glow);
+  }
+}
+
+.bubble:focus-visible {
+  outline: none;
+}
+.bubble:focus-visible .bubble__orb {
+  outline: 3px solid #fff;
+  outline-offset: 5px;
+}
+
+/* Pop: orb bursts, label stays so the grid doesn't jump */
+.bubble.is-popped .bubble__orb {
+  animation: pop 0.32s ease-out forwards;
+}
+.bubble.is-reforming .bubble__orb {
+  animation: reform 0.55s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes pop {
+  40% { transform: scale(1.2); opacity: 1; }
+  to  { transform: scale(1.35); opacity: 0; }
+}
+@keyframes reform {
+  from { transform: scale(0.2); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
+}
+
+/* Burst droplets (spawned in effects.js) */
+.droplet {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 50;
+  width: var(--s);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(circle at 35% 30%, #fff 0 18%, rgb(170 230 255 / 0.9) 45%, rgb(120 200 255 / 0.25));
+  animation: splash var(--d) cubic-bezier(0.15, 0.7, 0.4, 1) forwards;
+}
+
+@keyframes splash {
+  from { transform: translate(var(--x0), var(--y0)) scale(1); opacity: 1; }
+  to   { transform: translate(var(--x1), var(--y1)) scale(0.3); opacity: 0; }
+}
+
+/* ---------- Bruce ---------- */
+.bruce {
+  appearance: none;
+  border: 0;
+  padding: 0;
+  background: none;
+  position: fixed;
+  left: 0;
+  top: 0;
+  /* Behind the bubbles, so he never steals a tap meant for a link */
+  z-index: 1;
+  width: var(--bruce-w);
+  aspect-ratio: 298 / 275;
+  cursor: pointer;
+  will-change: transform;
+  /* Hidden until JS places him, so he doesn't flash in the corner */
+  visibility: hidden;
+  touch-action: manipulation;
+}
+
+.bruce.is-ready {
+  visibility: visible;
+}
+
+/* ...but in front while he's eating them */
+.bruce.is-frenzy {
+  z-index: 3;
+}
+
+.bruce__img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  user-select: none;
+  -webkit-user-drag: none;
+  filter: drop-shadow(0 12px 18px rgb(10 0 60 / 0.35));
+  will-change: transform;
+}
+
+.bruce:focus-visible {
+  outline: 3px dashed #fff;
+  outline-offset: 4px;
+  border-radius: 24px;
+}
+
+/* ---------- Toast ---------- */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: max(1.25rem, env(safe-area-inset-bottom));
+  z-index: 60;
+  margin: 0;
+  max-width: min(92vw, 28rem);
+  padding: 0.75rem 1.1rem;
+  border-radius: 14px;
+  background: rgb(20 12 80 / 0.85);
+  border: 1px solid rgb(255 255 255 / 0.25);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  text-align: center;
+  font-size: 0.95rem;
+  transform: translate(-50%, 150%);
+  opacity: 0;
+  transition: transform 0.35s ease, opacity 0.35s ease;
+  pointer-events: none;
+}
+
+.toast.is-visible {
+  transform: translate(-50%, 0);
+  opacity: 1;
+}
+
+/* ---------- Reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .bubble__float,
+  .ambient span {
+    animation: none;
+  }
+  .ambient {
+    display: none;
+  }
+  .bubble__orb,
+  .toast {
+    transition: none;
+  }
 }
