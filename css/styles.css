@@ -60,5 +60,5 @@
   position: absolute;
   z-index: 5;
   display: inline-block;
-  transform: "scaleX(1)";
+  transform: scaleX(1); /* Fixed syntax - removed quotes */
 }

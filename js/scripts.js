@@ -13,15 +13,15 @@ function changeSource(bubble){
 
 function openResume(){
     changeSource(0);
-    setTimeout(() => {window.open("assets/Resume-Jack-Ciroli.pdf", "_blank");}, 900);
+    setTimeout(() => {window.open("assets/Resume-Jack-Ciroli.pdf", "_blank");}, 250);
 }
 
 function openGithub(){
     changeSource(1);
-    setTimeout(() => {window.open("https://github.com/jack353", "_blank");}, 900);
+    setTimeout(() => {window.open("https://github.com/jack353", "_blank");}, 250);
 }
 
 function openLinkedIn(){
     changeSource(2);
-    setTimeout(() => {window.open("https://www.linkedin.com/in/jack-ciroli/", "_blank");}, 900);
+    setTimeout(() => {window.open("https://www.linkedin.com/in/jack-ciroli/", "_blank");}, 250);
 }
