@@ -11,6 +11,7 @@ const MOUTH = { x: 0.15, y: 0.44 };
 
 const CURSOR_IDLE_MS = 3000;
 const FRENZY_TIMEOUT_MS = 9000;
+const TURN_COMMIT_MS = 400; // once he turns, he commits for a moment
 
 const clamp = (v, min, max) => Math.min(max, Math.max(min, v));
 const rand = (min, max) => min + Math.random() * (max - min);
@@ -28,8 +29,11 @@ export function initBruce() {
   const pos = { x: 0, y: 0 };
   const vel = { x: 0, y: 0 };
   let flip = 1; // 1 = facing left (native art), -1 = facing right; eases through 0 when turning
+  let facing = 1; // committed direction that `flip` animates toward
+  let turnedAt = -Infinity;
   let tilt = 0;
   let punch = 0; // extra scale that decays after a bite
+  let intentX = 0; // horizontal offset from his body to where he's steering
   let frame = 'closed';
 
   // Behaviour
@@ -40,6 +44,7 @@ export function initBruce() {
   let food = null; // touch-tap target on phones
   let frenzyQueue = [];
   let cooldownUntil = 0;
+  let escape = null; // where he darts to after a bite, picked once
 
   const pointer = { x: 0, y: 0, t: -Infinity, overLink: false };
   let speechTimer;
@@ -75,8 +80,6 @@ export function initBruce() {
     img.src = FRAMES[name];
   }
 
-  const facingSign = () => (flip >= 0 ? 1 : -1);
-
   function mouth() {
     return {
       x: pos.x - flip * (0.5 - MOUTH.x) * w,
@@ -90,11 +93,16 @@ export function initBruce() {
     const dx = tx - m.x;
     const dy = ty - m.y;
     const d = Math.hypot(dx, dy) || 1;
+    intentX = tx - pos.x;
     const speed = maxSpeed * Math.min(1, d / arrive);
-    let sx = (dx / d) * speed - vel.x;
-    let sy = (dy / d) * speed - vel.y;
+    const wantX = (dx / d) * speed;
+    const wantY = (dy / d) * speed;
+    let sx = wantX - vel.x;
+    let sy = wantY - vel.y;
     const s = Math.hypot(sx, sy);
-    const maxStep = accel * dt;
+    // Reversing direction: brake hard (a tail flick) instead of drifting the wrong way
+    const reversing = wantX * vel.x + wantY * vel.y < 0;
+    const maxStep = accel * (reversing ? 3 : 1) * dt;
     if (s > maxStep) {
       sx = (sx / s) * maxStep;
       sy = (sy / s) * maxStep;
@@ -117,9 +125,19 @@ export function initBruce() {
     setFrame('closed');
     punch = 0.14;
     splash(x, y, 9, w * 0.3);
-    cooldownUntil = now + 1400;
     mode = 'retreat';
-    modeUntil = now + 1100;
+    modeUntil = cooldownUntil = now + 1100;
+
+    // Pick the escape point once, away from the bite. Deciding it every frame
+    // made him whip back and forth whenever the cursor crossed him.
+    const minX = w * 0.5;
+    const maxX = vw - w * 0.5;
+    let away = Math.sign(pos.x - x) || -facing;
+    if (Math.abs(clamp(pos.x + away * w * 2, minX, maxX) - pos.x) < w) away = -away; // cornered: go the other way
+    escape = {
+      x: clamp(pos.x + away * w * 2, minX, maxX),
+      y: clamp(pos.y + rand(-0.4, 0.4) * h, h * 0.5, vh - h * 0.5),
+    };
   }
 
   function startFrenzy(now) {
@@ -184,7 +202,7 @@ export function initBruce() {
     measure();
     pos.x = vw - w * 0.6;
     pos.y = vh - h * 0.55;
-    flip = 1;
+    flip = facing = 1;
     render(0);
   }
 
@@ -202,7 +220,12 @@ export function initBruce() {
 
     if (food && now > food.until) food = null;
 
-    if (mode === 'retreat' && now > modeUntil) mode = 'wander';
+    if (mode === 'retreat' && now > modeUntil) {
+      // Keep drifting the way he darted instead of picking a random spot behind him
+      mode = 'wander';
+      wanderTarget = escape;
+      wanderUntil = now + 1500;
+    }
     if (mode === 'frenzy' && now > modeUntil) endFrenzy(now);
     if (mode === 'wander' || mode === 'chase') {
       mode = (cursorActive || food) && now > cooldownUntil ? 'chase' : 'wander';
@@ -229,7 +252,11 @@ export function initBruce() {
           seek(pointer.x + (cx / d) * w, pointer.y + (cy / d) * w * 0.6, 260 * sizeK, 500 * sizeK, dt, w * 0.6);
           break;
         }
-        const d = seek(target.x, target.y, 380 * sizeK, 700 * sizeK, dt, w * 0.35);
+        // Target right above/below his body: rise or dive to it rather than
+        // backing up sideways to line his mouth up (which made him flip-flop)
+        const overBody = Math.abs(target.x - pos.x) < w * 0.35;
+        seek(overBody ? m.x : target.x, target.y, 380 * sizeK, 700 * sizeK, dt, w * 0.35);
+        const d = dist(m.x, m.y, target.x, target.y);
         wantMouthOpen = d < w * 0.8;
         if (d < w * 0.14) {
           bite(now, target.x, target.y);
@@ -239,9 +266,8 @@ export function initBruce() {
       }
 
       case 'retreat': {
-        // Dart away from where he just bit, then calm down
-        const away = Math.sign(pos.x - pointer.x) || -facingSign();
-        seek(clamp(pos.x + away * w * 2, w * 0.5, vw - w * 0.5), pos.y + rand(-20, 20), 300 * sizeK, 900 * sizeK, dt, w);
+        // Dart to the escape point and ignore the cursor until he's calmed down
+        seek(escape.x, escape.y, 300 * sizeK, 900 * sizeK, dt, w);
         break;
       }
 
@@ -274,12 +300,19 @@ export function initBruce() {
     pos.x = clamp(pos.x, -w * 0.3, vw + w * 0.3);
     pos.y = clamp(pos.y, h * 0.2, vh + h * 0.1);
 
-    // Turn to face where he's swimming (with hysteresis so he doesn't flicker)
-    const turnSpeed = 18 * sizeK;
-    let facing = facingSign();
-    if (vel.x > turnSpeed) facing = -1;
-    else if (vel.x < -turnSpeed) facing = 1;
-    flip = approach(flip, facing, 9, dt);
+    // Face where he *wants* to go, so he turns before his momentum catches up.
+    // The dead zone and a short commitment after each turn stop him flickering
+    // when the target is right above or below him.
+    const turnSpeed = 60 * sizeK;
+    let want = facing;
+    if (Math.abs(intentX) > w * 0.35) want = intentX > 0 ? -1 : 1;
+    else if (vel.x > turnSpeed) want = -1;
+    else if (vel.x < -turnSpeed) want = 1;
+    if (want !== facing && now - turnedAt > TURN_COMMIT_MS) {
+      facing = want;
+      turnedAt = now;
+    }
+    flip = approach(flip, facing, 16, dt);
 
     // Nose follows vertical motion
     const pitch = -Math.atan2(vel.y, Math.abs(vel.x) + 40 * sizeK) * (180 / Math.PI);
