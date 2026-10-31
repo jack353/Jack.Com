@@ -44,6 +44,7 @@ export function initBruce() {
   let food = null; // touch-tap target on phones
   let frenzyQueue = [];
   let cooldownUntil = 0;
+  let escape = null; // where he darts to after a bite, picked once
 
   const pointer = { x: 0, y: 0, t: -Infinity, overLink: false };
   let speechTimer;
@@ -124,9 +125,19 @@ export function initBruce() {
     setFrame('closed');
     punch = 0.14;
     splash(x, y, 9, w * 0.3);
-    cooldownUntil = now + 1400;
     mode = 'retreat';
-    modeUntil = now + 1100;
+    modeUntil = cooldownUntil = now + 1100;
+
+    // Pick the escape point once, away from the bite. Deciding it every frame
+    // made him whip back and forth whenever the cursor crossed him.
+    const minX = w * 0.5;
+    const maxX = vw - w * 0.5;
+    let away = Math.sign(pos.x - x) || -facing;
+    if (Math.abs(clamp(pos.x + away * w * 2, minX, maxX) - pos.x) < w) away = -away; // cornered: go the other way
+    escape = {
+      x: clamp(pos.x + away * w * 2, minX, maxX),
+      y: clamp(pos.y + rand(-0.4, 0.4) * h, h * 0.5, vh - h * 0.5),
+    };
   }
 
   function startFrenzy(now) {
@@ -209,7 +220,12 @@ export function initBruce() {
 
     if (food && now > food.until) food = null;
 
-    if (mode === 'retreat' && now > modeUntil) mode = 'wander';
+    if (mode === 'retreat' && now > modeUntil) {
+      // Keep drifting the way he darted instead of picking a random spot behind him
+      mode = 'wander';
+      wanderTarget = escape;
+      wanderUntil = now + 1500;
+    }
     if (mode === 'frenzy' && now > modeUntil) endFrenzy(now);
     if (mode === 'wander' || mode === 'chase') {
       mode = (cursorActive || food) && now > cooldownUntil ? 'chase' : 'wander';
@@ -250,9 +266,8 @@ export function initBruce() {
       }
 
       case 'retreat': {
-        // Dart away from where he just bit, then calm down
-        const away = Math.sign(pos.x - pointer.x) || -facing;
-        seek(clamp(pos.x + away * w * 2, w * 0.5, vw - w * 0.5), pos.y + rand(-20, 20), 300 * sizeK, 900 * sizeK, dt, w);
+        // Dart to the escape point and ignore the cursor until he's calmed down
+        seek(escape.x, escape.y, 300 * sizeK, 900 * sizeK, dt, w);
         break;
       }
 
