@@ -26,6 +26,8 @@ export function initBruce() {
   new Image().src = FRAMES.chomp; // warm the cache so the first bite doesn't flicker
 
   let w, h, vw, vh;
+  let lane = null; // touch screens: the open water below the bubbles where he swims
+  const touchOnly = window.matchMedia('(hover: none)');
   const pos = { x: 0, y: 0 };
   const vel = { x: 0, y: 0 };
   let flip = 1; // 1 = facing left (native art), -1 = facing right; eases through 0 when turning
@@ -72,6 +74,15 @@ export function initBruce() {
     vh = window.innerHeight;
     w = el.offsetWidth;
     h = el.offsetHeight;
+
+    // With no cursor to chase on a phone he'd idle behind the bubbles and
+    // cover their labels, so keep him in the water below them when it fits
+    lane = null;
+    if (touchOnly.matches) {
+      const top = document.querySelector('.bubbles').getBoundingClientRect().bottom + h * 0.4;
+      const bottom = vh - h * 0.4;
+      if (bottom - top > h * 0.2) lane = { top, bottom };
+    }
   }
 
   function setFrame(name) {
@@ -113,10 +124,11 @@ export function initBruce() {
   }
 
   function pickWanderTarget(now) {
-    const top = Math.min(vh * 0.35, vh - h);
+    const top = lane ? lane.top : Math.min(vh * 0.35, vh - h);
+    const bottom = lane ? lane.bottom : vh - h * 0.55;
     wanderTarget = {
       x: rand(w * 0.6, Math.max(w * 0.6, vw - w * 0.6)),
-      y: rand(top, Math.max(top, vh - h * 0.55)),
+      y: rand(top, Math.max(top, bottom)),
     };
     wanderUntil = now + rand(3500, 7000);
   }
@@ -356,7 +368,7 @@ export function initBruce() {
   } else {
     // Swim in from off-screen right
     pos.x = vw + w * 0.3;
-    pos.y = vh * 0.7;
+    pos.y = lane ? (lane.top + lane.bottom) / 2 : vh * 0.7;
     vel.x = -200 * (w / 250);
     render(last);
   }

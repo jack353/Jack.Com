@@ -141,6 +141,7 @@ body {
   font-size: clamp(1rem, 2.4vw, 1.2rem);
   line-height: 1.45;
   color: var(--foam);
+  text-wrap: balance;
 }
 
 .bubbles {
@@ -157,6 +158,27 @@ body {
 .bubble:nth-child(2) { --tilt: 3deg;  translate: 0 1.2rem; }
 .bubble:nth-child(3) { --tilt: 2deg;  translate: 0.6rem -0.4rem; }
 .bubble:nth-child(4) { --tilt: -3deg; translate: -0.4rem 0.9rem; }
+
+/* Phones in portrait: a tidy 2x2 just under the intro, leaving open water
+   below for Bruce. One deliberate stagger instead of four small nudges,
+   which read as crooked at this size. */
+@media (max-width: 599px) and (orientation: portrait) {
+  :root {
+    /* Size from height too, so short phones keep some water free below */
+    --orb: clamp(96px, min(36vw, 17vh), 156px);
+  }
+  .bubbles {
+    align-self: start;
+    margin-top: clamp(1rem, 5vh, 3rem);
+    padding-block: 0;
+  }
+  .bubble:nth-child(n) {
+    translate: 0 0;
+  }
+  .bubble:nth-child(even) {
+    translate: 0 calc(var(--orb) * 0.22);
+  }
+}
 
 @media (min-width: 768px) and (orientation: landscape), (max-height: 520px) and (orientation: landscape) {
   .bubbles {
